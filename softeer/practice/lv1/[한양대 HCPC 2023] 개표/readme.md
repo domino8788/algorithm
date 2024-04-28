@@ -1,5 +1,5 @@
-## 효도의 시작
-> https://softeer.ai/practice/7724
+## [한양대 HCPC 2023] 개표
+> https://softeer.ai/practice/7698
 
 ## 평가
 ### 2024-04-21
