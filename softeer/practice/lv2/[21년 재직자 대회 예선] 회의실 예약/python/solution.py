@@ -1,45 +1,48 @@
 import sys
 
-testCaseCount = int(sys.stdin.readline())
+meetingRoomCount, reservationCount = map(int, sys.stdin.readline().split())
+meetingInfo={}
+for i in range(meetingRoomCount):
+    meetingRoomName = sys.stdin.readline().strip();
+    meetingInfo[meetingRoomName] = [0 for _ in range(9, 18)] #예약 가능한 시간대 9시~17시 (18시는 마감이므로 예약불가)
 
+for i in range(reservationCount):
+    meetingRoomName, startHour, endHour = map(lambda arr: arr[1] if arr[0]==0 else int(arr[1]), enumerate(sys.stdin.readline().split()))
+    for j in range(startHour, endHour):
+        meetingInfo[meetingRoomName][j-9] = 1
+        
+for (roomIdx, meetingRoomName) in enumerate(sorted(meetingInfo.keys())):
+    doesNotReserved = [];
+    startHour = None
+    endHour = None
+    reservationInfo = meetingInfo[meetingRoomName]
+    for hour, reserved in enumerate(reservationInfo):
+        if reserved == 0: #예약되지 않았다
+            if hour+9 == 17: #예약되지 않은 시간이 17시일 경우 18시는 예약이 불가능하므로 별도로 분기처리가 필요하다.
+                if startHour is None:
+                    startHour = hour+9
+                endHour = hour+9+1
+                doesNotReserved.append(f"{startHour:0>2}-{endHour:0>2}")
+            elif startHour is None: #startHour가 설정되지 않은 상태일 때
+                startHour = hour+9
+            else: #startHour가 설정된 상태일 때        
+                continue
+        else: #예약되었다
+            if startHour is None: #startHour가 설정되지 않은 상태이면 계속 예약중인 상태
+                continue
+            else: #예약 되었으면서 startHour가 설정된 상태. 즉 예약 가능한 시간대의 끝
+                endHour = hour+9
+                doesNotReserved.append(f"{startHour:0>2}-{endHour:0>2}")
+                startHour = None
+                endHour = None
+    print(f"Room {meetingRoomName}:")
+    if len(doesNotReserved) ==0:
+        print("Not available")
+    else:
+        print(f"{len(doesNotReserved)} available:")
+        for info in doesNotReserved:
+            print(info)
+    if roomIdx != meetingRoomCount-1:
+        print("-----")
 
-# numberBulbs = [
-#     [1,1,1,0,1,1,1],
-#     [0,0,1,0,0,1,0],
-#     [1,0,1,1,1,0,1],
-#     [1,0,1,1,0,1,1],
-#     [0,1,1,1,0,1,0],
-#     [1,1,0,1,0,1,1],
-#     [1,1,0,1,1,1,1],
-#     [1,1,1,0,0,1,0],
-#     [1,1,1,1,1,1,1],
-#     [1,1,1,1,0,1,1]
-# ]
-# 각 숫자별 전구상태(1:켜짐, 0:꺼짐)를 이진수로 표현
-numberBulbs = [
-    0b1110111,
-    0b0010010,
-    0b1011101,
-    0b1011011,
-    0b0111010,
-    0b1101011,
-    0b1101111,
-    0b1110010,
-    0b1111111,
-    0b1111011
-]
-
-for i in range(testCaseCount):
-    testCase1, testCase2 = map(int, sys.stdin.readline().split()) #테스트 케이스 숫자 둘
-    largeTestCase = str(max(testCase1, testCase2))[::-1] #테스트 케이스 중 큰 숫자를 문자열로 변환해서 역순정렬
-    smallTestCase = str(min(testCase1, testCase2))[::-1] #테스트 케이스 중 작은 숫자를 문자열로 변환해서 역순정렬
-    clickCount = 0 # 스위치를 누른 횟수
-    for j, num in enumerate(largeTestCase):
-        if len(smallTestCase) > j: #대조해야할 자리수가 작은 숫자의 최대길이보다 작을 경우 
-            largeTestCaseBulb = numberBulbs[int(num)]
-            smallTestCaseBulb = numberBulbs[int(smallTestCase[j])]
-            clickCount += bin(largeTestCaseBulb^smallTestCaseBulb).count("1") # xor 연산하면 전구위치간 상태가 다를 경우 1로 연산됨, 결과의 1을 세면 스위치를 눌러야하는 횟수다.
-        else: #대조해야할 자리수가 작은 숫자의 최대길이보다 클 경우
-            clickCount += bin(numberBulbs[int(num)]).count("1") #켜야하는(1) 전구의 수만 가산한다.
-            
-    print(clickCount)
+        
